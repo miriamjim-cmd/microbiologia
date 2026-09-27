@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hoja de Reporte de Laboratorio - Tinciones Diferenciales</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- html2pdf.js for direct client-side PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* Print Formatting Rules */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-container {
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      textarea, input, select {
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+      }
+    }
+
+    /* Interactive Dropzone Styles */
+    .drop-zone {
+      border: 2px dashed #94a3b8;
+      transition: all 0.2s ease;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #0284c7;
+      background-color: #f0f9ff;
+    }
+
+    /* Input & Textarea custom styles for clean document look */
+    .doc-input {
+      border-bottom: 1px solid #cbd5e1;
+      transition: border-color 0.2s;
+    }
+    .doc-input:focus {
+      outline: none;
+      border-color: #0284c7;
+    }
+
+    .doc-textarea {
+      transition: all 0.2s;
+    }
+    .doc-textarea:focus {
+      outline: none;
+      border-color: #0284c7;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Action Toolbar (Fixed on Screen, Hidden during Printing/Exporting) -->
+  <header class="no-print bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4 py-2.5 gap-3">
+      
+      <!-- Document Info -->
+      <div class="flex items-center gap-3">
+        <div class="p-2 text-sky-600 bg-sky-50 rounded-lg">
+          <i class="fa-solid fa-file-contract text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-slate-800 text-base md:text-lg">Reporte interactivo de laboratorio</h1>
+            <span class="text-[11px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Listo para Llenar</span>
+          </div>
+          <p class="text-xs text-slate-500">Tinciones Diferenciales: Gram y Shaeffer-Fulton • Completa y exporta tu archivo</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons (Download PDF & Print) -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="clearFields()" 
+          class="flex items-center gap-1.5 px-3 py-2 text-xs md:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+          <i class="fa-solid fa-rotate-left"></i> Restablecer
+        </button>
+        
+        <button onclick="exportToPDF()" 
+          class="flex items-center gap-1.5 px-4 py-2 text-xs md:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors">
+          <i class="fa-solid fa-file-pdf text-base"></i> DESCARGAR PDF
+        </button>
+
+        <button onclick="window.print()" 
+          class="flex items-center gap-1.5 px-4 py-2 text-xs md:text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm transition-colors">
+          <i class="fa-solid fa-print text-base"></i> IMPRIMIR
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Instruction Bar -->
+    <div class="bg-amber-50 border-t border-b border-amber-200 px-4 py-2 text-xs text-amber-900 flex items-center gap-2 justify-center text-center">
+      <i class="fa-solid fa-circle-info text-amber-600 flex-shrink-0"></i>
+      <span><strong>Instrucciones para el estudiante:</strong> Diligencia todos los campos con tus datos y resultados. Al finalizar, haz clic en <strong>DESCARGAR PDF</strong> para guardar el archivo en tu dispositivo y subirlo a Canvas LMS.</span>
+    </div>
+  </header>
+
+  <main class="flex-1 py-8 px-2 md:px-4 flex justify-center overflow-y-auto">
+    
+    <!-- Printable / Exportable Page Box -->
+    <div id="pdf-content" class="page-container w-full max-w-[850px] bg-white rounded-md shadow-xl border border-slate-300 p-6 md:p-12 min-h-[1050px] flex flex-col justify-between my-auto">
+      <div>
+        
+        <!-- Document Header Banner -->
+        <div class="border-b-2 border-sky-700 pb-4 mb-6 flex justify-between items-start gap-4">
+          <div class="flex-1">
+            <span class="text-xs font-bold text-sky-700 uppercase tracking-widest block mb-1">Microbiología General y Médica</span>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">HOJA DE REPORTE DE RESULTADOS</h1>
+            <p class="text-sm font-medium text-slate-600 mt-1">Práctica: Tinciones Diferenciales (Gram y Shaeffer-Fulton)</p>
+          </div>
+          <div class="text-right text-xs text-slate-500 border-l border-slate-200 pl-4 py-1">
+            <p class="font-bold text-slate-700">Formato Oficial</p>
+            <p>LAB-MIC-2026</p>
+            <p class="text-[10px] text-slate-400 mt-1">Rev. 3.0</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: DATOS DE IDENTIFICACIÓN -->
+        <section class="mb-6">
+          <h2 class="text-xs font-bold text-sky-800 bg-sky-50 px-3 py-1.5 rounded border-l-4 border-sky-700 mb-3 flex items-center gap-2 uppercase tracking-wide">
+            <i class="fa-solid fa-id-card"></i> I. Datos de Identificación del Estudiante
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
+            <div class="flex items-center gap-2 border-b border-slate-300 pb-1">
+              <label class="font-bold text-slate-700 w-36 flex-shrink-0">Nombre del Estudiante:</label>
+              <input type="text" id="studentName" placeholder="Escribe tu nombre completo..." class="w-full bg-transparent focus:outline-none text-slate-900 font-medium">
+            </div>
+            
+            <div class="flex items-center gap-2 border-b border-slate-300 pb-1">
+              <label class="font-bold text-slate-700 w-28 flex-shrink-0">Fecha de Práctica:</label>
+              <input type="date" id="labDate" class="w-full bg-transparent focus:outline-none text-slate-900">
+            </div>
+            
+            <div class="flex items-center gap-2 border-b border-slate-300 pb-1">
+              <label class="font-bold text-slate-700 w-36 flex-shrink-0">Grupo / Sección:</label>
+              <input type="text" id="groupSection" placeholder="Ej. Grupo 3 - Sección B" class="w-full bg-transparent focus:outline-none text-slate-900">
+            </div>
+            
+            <div class="flex items-center gap-2 border-b border-slate-300 pb-1">
+              <label class="font-bold text-slate-700 w-28 flex-shrink-0">Docente:</label>
+              <input type="text" id="teacherName" placeholder="Nombre del Profesor(a)" class="w-full bg-transparent focus:outline-none text-slate-900">
+            </div>
+          </div>
+        </section>
+
+        <!-- SECCIÓN 2: RESULTADOS DE TINCIÓN DE GRAM -->
+        <section class="mb-8">
+          <h2 class="text-xs font-bold text-indigo-900 bg-indigo-50 px-3 py-1.5 rounded border-l-4 border-indigo-700 mb-4 flex items-center justify-between uppercase tracking-wide">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-vial-circle-check"></i> II. Resultados de Tinción de Gram</span>
+            <span class="text-[11px] font-normal text-indigo-700 lowercase">(observación a 100x con aceite de inmersión)</span>
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            
+            <!-- Campo de Esquema Visual (4 Cols) -->
+            <div class="md:col-span-5 flex flex-col items-center">
+              <label class="text-xs font-bold text-slate-700 mb-2">Esquema Microscópico (Muestra A)</label>
+              
+              <div class="drop-zone w-44 h-44 rounded-full bg-slate-50 flex flex-col items-center justify-center relative overflow-hidden shadow-inner cursor-pointer"
+                   onclick="triggerUpload('fileGram')" id="zoneGram">
+                <img id="previewGram" class="hidden w-full h-full object-cover rounded-full" alt="Esquema Gram">
+                <div id="placeholderGram" class="text-center p-3">
+                  <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-1"></i>
+                  <p class="text-[11px] text-slate-600 font-semibold">Haz clic o arrastra una imagen</p>
+                  <p class="text-[9px] text-slate-400 mt-0.5">Formatos: JPG, PNG, SVG</p>
+                </div>
+              </div>
+              <input type="file" id="fileGram" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'previewGram', 'placeholderGram')">
+
+              <!-- Quick Helper Presets -->
+              <div class="no-print mt-2 flex gap-1.5">
+                <button type="button" onclick="loadSampleImage('gram_pos', 'previewGram', 'placeholderGram')" 
+                        class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded hover:bg-indigo-200">
+                  + Gram Positiva
+                </button>
+                <button type="button" onclick="loadSampleImage('gram_neg', 'previewGram', 'placeholderGram')" 
+                        class="text-[10px] bg-pink-100 text-pink-800 font-semibold px-2 py-0.5 rounded hover:bg-pink-200">
+                  + Gram Negativa
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabla de registro de datos (7 Cols) -->
+            <div class="md:col-span-7">
+              <table class="w-full text-xs border-collapse border border-slate-300">
+                <tbody>
+                  <tr class="bg-slate-50">
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700 w-1/3">Organismo / Muestra:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="gramOrganism" placeholder="Ej. Staphylococcus aureus / E. coli" class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Morfología Celular:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="gramMorphology" placeholder="Ej. Cocos / Bacilos / Cocobacilos" class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                  <tr class="bg-slate-50">
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Agrupación:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="gramGrouping" placeholder="Ej. Racimos, Cadenas, Pares, Aislados" class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Reacción Gram:</td>
+                    <td class="p-2 border border-slate-300">
+                      <select id="gramReaction" class="w-full bg-transparent focus:outline-none font-semibold">
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Gram Positiva (+)" class="text-indigo-800 font-bold">Gram Positiva (+)</option>
+                        <option value="Gram Negativa (-)" class="text-pink-700 font-bold">Gram Negativa (-)</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr class="bg-slate-50">
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Coloración Observada:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="gramColor" placeholder="Ej. Violeta / Rosa intenso" class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN 3: RESULTADOS DE TINCIÓN DE SHAEFFER-FULTON -->
+        <section class="mb-8">
+          <h2 class="text-xs font-bold text-emerald-900 bg-emerald-50 px-3 py-1.5 rounded border-l-4 border-emerald-700 mb-4 flex items-center justify-between uppercase tracking-wide">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-bacteria"></i> III. Resultados de Tinción de Shaeffer-Fulton (Endosporas)</span>
+            <span class="text-[11px] font-normal text-emerald-700 lowercase">(observación a 100x con aceite de inmersión)</span>
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            
+            <!-- Campo de Esquema Visual (4 Cols) -->
+            <div class="md:col-span-5 flex flex-col items-center">
+              <label class="text-xs font-bold text-slate-700 mb-2">Esquema Microscópico (Muestra B)</label>
+              
+              <div class="drop-zone w-44 h-44 rounded-full bg-slate-50 flex flex-col items-center justify-center relative overflow-hidden shadow-inner cursor-pointer"
+                   onclick="triggerUpload('fileFulton')" id="zoneFulton">
+                <img id="previewFulton" class="hidden w-full h-full object-cover rounded-full" alt="Esquema Fulton">
+                <div id="placeholderFulton" class="text-center p-3">
+                  <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-1"></i>
+                  <p class="text-[11px] text-slate-600 font-semibold">Haz clic o arrastra una imagen</p>
+                  <p class="text-[9px] text-slate-400 mt-0.5">Formatos: JPG, PNG, SVG</p>
+                </div>
+              </div>
+              <input type="file" id="fileFulton" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'previewFulton', 'placeholderFulton')">
+
+              <!-- Quick Helper Presets -->
+              <div class="no-print mt-2">
+                <button type="button" onclick="loadSampleImage('fulton_sample', 'previewFulton', 'placeholderFulton')" 
+                        class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-0.5 rounded hover:bg-emerald-200">
+                  + Cargar Ejemplo Endosporas
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabla de registro de datos (7 Cols) -->
+            <div class="md:col-span-7">
+              <table class="w-full text-xs border-collapse border border-slate-300">
+                <tbody>
+                  <tr class="bg-slate-50">
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700 w-1/3">Organismo / Muestra:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="fultonOrganism" placeholder="Ej. Bacillus subtilis / Clostridium spp." class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Presencia de Endosporas:</td>
+                    <td class="p-2 border border-slate-300">
+                      <select id="fultonPresence" class="w-full bg-transparent focus:outline-none font-semibold">
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Positiva (+)" class="text-emerald-800 font-bold">Positiva (+)</option>
+                        <option value="Negativa (-)" class="text-slate-600">Negativa (-)</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr class="bg-slate-50">
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Color de la Endospora:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="fultonSporeColor" placeholder="Ej. Verde brillante / Esmeralda" class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Color Célula Vegetativa:</td>
+                    <td class="p-2 border border-slate-300">
+                      <input type="text" id="fultonVegColor" placeholder="Ej. Rosa / Rojo (Safranina)" class="w-full bg-transparent focus:outline-none">
+                    </td>
+                  </tr>
+                  <tr class="bg-slate-50">
+                    <td class="p-2 border border-slate-300 font-bold text-slate-700">Ubicación de la Espora:</td>
+                    <td class="p-2 border border-slate-300">
+                      <select id="fultonLocation" class="w-full bg-transparent focus:outline-none">
+                        <option value="">-- Seleccionar Posición --</option>
+                        <option value="Central">Central</option>
+                        <option value="Subterminal">Subterminal</option>
+                        <option value="Terminal">Terminal</option>
+                        <option value="No aplica / Sin esporas">No aplica</option>
+                      </select>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN 4: CUESTIONARIO ANALÍTICO -->
+        <section class="mb-8 page-break">
+          <h2 class="text-xs font-bold text-amber-900 bg-amber-50 px-3 py-1.5 rounded border-l-4 border-amber-700 mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <i class="fa-solid fa-list-check"></i> IV. Cuestionario Analítico de Discusión
+          </h2>
+
+          <div class="space-y-4 text-xs md:text-sm">
+            
+            <div class="border border-slate-300 rounded-lg p-3 bg-white">
+              <label class="font-bold text-slate-800 block mb-1.5">
+                1. Función del Mordente: ¿Qué función fisicoquímica cumple el Lugol en la tinción de Gram y qué ocurre si se omite este paso en una bacteria Gram positiva?
+              </label>
+              <textarea id="q1" rows="3" placeholder="Redacta tu respuesta aquí..."
+                class="doc-textarea w-full p-2 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white text-slate-900"></textarea>
+            </div>
+
+            <div class="border border-slate-300 rounded-lg p-3 bg-white">
+              <label class="font-bold text-slate-800 block mb-1.5">
+                2. Falsos Resultados: Explica por qué un cultivo envejecido (>48 horas) de bacterias Gram positivas puede responder con un resultado falso Gram negativo.
+              </label>
+              <textarea id="q2" rows="3" placeholder="Redacta tu respuesta aquí..."
+                class="doc-textarea w-full p-2 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white text-slate-900"></textarea>
+            </div>
+
+            <div class="border border-slate-300 rounded-lg p-3 bg-white">
+              <label class="font-bold text-slate-800 block mb-1.5">
+                3. Mecanismo Térmico: ¿Cuál es la función de la emisión de vapor (calor) en la tinción de Shaeffer-Fulton y por qué el agua decolora la célula vegetativa pero no la endospora?
+              </label>
+              <textarea id="q3" rows="3" placeholder="Redacta tu respuesta aquí..."
+                class="doc-textarea w-full p-2 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white text-slate-900"></textarea>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN 5: CONCLUSIONES Y FIRMA DEL ESTUDIANTE -->
+        <section class="mb-6">
+          <h2 class="text-xs font-bold text-sky-900 bg-sky-50 px-3 py-1.5 rounded border-l-4 border-sky-700 mb-3 flex items-center gap-2 uppercase tracking-wide">
+            <i class="fa-solid fa-signature"></i> V. Conclusiones y Firma
+          </h2>
+          
+          <div class="mb-6">
+            <label class="font-bold text-slate-800 block text-xs mb-1">Conclusiones de la práctica:</label>
+            <textarea id="conclusions" rows="3" placeholder="Escribe un resumen sintético de tus conclusiones..."
+              class="doc-textarea w-full p-2.5 text-xs border border-slate-300 rounded bg-slate-50 focus:bg-white text-slate-900"></textarea>
+          </div>
+
+          <!-- Line for signature -->
+          <div class="pt-6 border-t border-dashed border-slate-300 flex justify-between items-end text-xs">
+            <div class="text-center w-64">
+              <div class="border-b border-slate-400 pb-1 mb-1">
+                <input type="text" id="signatureName" placeholder="Firma / Nombre del estudiante" class="w-full text-center bg-transparent focus:outline-none font-medium">
+              </div>
+              <p class="text-[10px] text-slate-500 uppercase">Firma del Estudiante</p>
+            </div>
+
+            <div class="text-right text-[11px] text-slate-400">
+              <p>Documento listo para envío vía Canvas LMS</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Footer for Report Page -->
+      <div class="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] text-slate-400">
+        <p>Laboratorio de Microbiología • Formato Digital Estudiantil</p>
+        <p>Página 1 de 1</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Placeholder image data URIs
+    const SAMPLE_IMAGES = {
+      gram_pos: 'https://placehold.co/400x400/2e1065/e9d5ff?text=Gram+(%2B)+Cocos+en+Racimo',
+      gram_neg: 'https://placehold.co/400x400/831843/fbcfe8?text=Gram+(-)+Bacilos+Rosa',
+      fulton_sample: 'https://placehold.co/400x400/064e3b/a7f3d0?text=Endosporas+Verdes+y+Vegetativas+Rosa'
+    };
+
+    // Open file selector
+    function triggerUpload(inputId) {
+      document.getElementById(inputId).click();
+    }
+
+    // Handle Image file upload to circular preview
+    function handleImageUpload(input, previewId, placeholderId) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const previewImg = document.getElementById(previewId);
+          const placeholder = document.getElementById(placeholderId);
+          
+          previewImg.src = e.target.result;
+          previewImg.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Load sample image preset
+    function loadSampleImage(sampleKey, previewId, placeholderId) {
+      const previewImg = document.getElementById(previewId);
+      const placeholder = document.getElementById(placeholderId);
+
+      previewImg.src = SAMPLE_IMAGES[sampleKey];
+      previewImg.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+    }
+
+    // Clear all form fields
+    function clearFields() {
+      if (confirm('¿Deseas reiniciar todos los campos del reporte?')) {
+        document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(el => el.value = '');
+        document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        
+        ['previewGram', 'previewFulton'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('hidden');
+        });
+        ['placeholderGram', 'placeholderFulton'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('hidden');
+        });
+
+        // Reset date to today
+        const dateInput = document.getElementById('labDate');
+        if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    // Direct PDF Generation Function using html2pdf
+    function exportToPDF() {
+      const element = document.getElementById('pdf-content');
+      const studentName = document.getElementById('studentName').value.trim() || 'Estudiante';
+      const cleanName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `Reporte_Tinciones_${cleanName}.pdf`;
+
+      // Options for html2pdf
+      const opt = {
+        margin:       [0.3, 0.3, 0.3, 0.3],
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      // Show temporary loading indicator
+      const btn = event.currentTarget;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...`;
+      btn.disabled = true;
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }).catch(err => {
+        console.error('PDF Generation Error:', err);
+        alert('Hubo un inconveniente al generar el PDF. Puedes usar la opción "IMPRIMIR" y seleccionar "Guardar como PDF".');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      });
+    }
+
+    // Initialize Page Defaults
+    window.onload = function() {
+      const dateInput = document.getElementById('labDate');
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+    };
+  </script>
+</body>
+</html>
